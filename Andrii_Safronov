@@ -1,0 +1,64 @@
+def read_grib(file_path):
+    with open(file_path, 'rb') as f:
+        grib_data = f.read()
+
+        # Szukanie początku GRIB
+        grib_start = grib_data.find(b'GRIB')
+        if grib_start == -1:
+            print("Nie znaleziono sekcji GRIB w pliku.")
+            return
+
+        # Szukanie sekcji 7777
+        section_7777_start = grib_data.find(b'7777')
+        if section_7777_start == -1:
+            print("Nie znaleziono sekcji 7777 w pliku.")
+            return
+
+        # Obliczanie odległości między końcem GRIB a początkiem sekcji 7777
+        distance_between = section_7777_start - grib_start
+
+        # Obliczanie długości całej wiadomości GRIB
+        whole_message_length = distance_between + 4  # Dodajemy 4, aby uwzględnić sekcję 7777
+
+        # Wypisanie ogólnych informacji
+        print("==========================")
+        print("== General Message Info ==")
+        print("==========================")
+        print("Grib Finda at pos:", grib_start)
+        print("7777 Find at position:", section_7777_start)
+        print("Distance bettwen end of grib and start of 7777:", distance_between)
+        print("Whole Message length:", whole_message_length)
+
+        # Wypisanie sekcji 1 (Section 1 Data)
+        print("\n======================")
+        print("==  Section 1 Data  ==")
+        print("======================")
+        section_1_data = grib_data[grib_start + 4:grib_start + 4 + 28]  # 28 to długość sekcji 1
+        print(section_1_data.decode('utf-8'))
+
+        # Wypisanie sekcji 2 (Section 2 Data)
+        print("\n======================")
+        print("==  Section 2 Data  ==")
+        print("======================")
+        section_2_data_start = grib_start + 4 + 28  # Początek sekcji 2
+        section_2_length = int.from_bytes(grib_data[section_2_data_start:section_2_data_start + 4], byteorder='big')
+        print("Section 2 length:", section_2_length)
+        section_2_data = grib_data[section_2_data_start + 4:section_2_data_start + 4 + section_2_length]
+        print(section_2_data.decode('utf-8'))
+
+        # Wypisanie sekcji 4 (Section 4 Data)
+        print("\n======================")
+        print("==  Section 4 Data  ==")
+        print("======================")
+        section_4_data_start = section_7777_start + 4  # Początek sekcji 4
+        section_4_length = int.from_bytes(grib_data[section_4_data_start:section_4_data_start + 4], byteorder='big')
+        print("Section 4 length:", section_4_length)
+        section_4_data = grib_data[section_4_data_start + 4:section_4_data_start + 4 + section_4_length]
+        print(section_4_data.decode('utf-8'))
+
+def main():
+    file_path = input("Podaj ścieżkę do pliku GRIB: ")
+    read_grib(file_path)
+
+if __name__ == "__main__":
+    main()
